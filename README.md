@@ -1,5 +1,7 @@
 # LeadEnrich AI - Premium Company Profiling & Lead Enrichment System
 
+**Live Demo URL**: [https://company-lead-enrichment.vercel.app/](https://company-lead-enrichment.vercel.app/)
+
 A production-ready business intelligence extraction and profiling pipeline. It automatically crawls company websites, scrapes relevant content intelligently using fuzzy sitemap-and-homepage matching, extracts contacts using robust regex patterns, and generates deep B2B insights (core services, target customers, organizational pain points, and customized outreach hooks) using Groq's high-speed inference engine.
 
 ---
