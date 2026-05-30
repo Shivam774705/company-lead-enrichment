@@ -33,6 +33,9 @@ from urllib.parse import urlparse, urljoin, urlunparse
 import requests
 from bs4 import BeautifulSoup
 from rapidfuzz import fuzz
+import warnings
+from bs4 import XMLParsedAsHTMLWarning
+warnings.filterwarnings("ignore", category=XMLParsedAsHTMLWarning)
 
 # Try to get key from environment or Colab secrets, else prompt user
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
