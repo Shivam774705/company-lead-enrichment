@@ -239,8 +239,8 @@ class ColabSmartScraper:
         emails = list(set(emails))
         phones = list(set(phones))
         combined_text = "\n\n".join(pages_content)
-        if len(combined_text) > 8500:
-            combined_text = combined_text[:8500] + "... [Truncated]"
+        if len(combined_text) > 4500:
+            combined_text = combined_text[:4500] + "... [Truncated]"
             
         return {
             "combined_text": combined_text,

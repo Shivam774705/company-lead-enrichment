@@ -203,10 +203,10 @@ class SmartScraper:
         emails = list(set(emails))
         phones = list(set(phones))
         
-        # Merge contents and optimize tokens (limit combined string length to 8500 chars)
+        # Merge contents and optimize tokens (limit combined string length to 4500 chars)
         combined_text = "\n\n".join(pages_content)
-        if len(combined_text) > 8500:
-            combined_text = combined_text[:8500] + "... [Content truncated for token optimization]"
+        if len(combined_text) > 4500:
+            combined_text = combined_text[:4500] + "... [Content truncated for token optimization]"
             
         return {
             "combined_text": combined_text,
