@@ -16,11 +16,6 @@ def enrich_company_api(request):
     Enriches a company by scraping its website and generating insights using Groq AI.
     """
     serializer = EnrichmentInputSerializer(data=request.data)
-    if not serializer.is_validate():
-        # Validate data
-        pass
-        
-    # Wait, in DRF the method is serializer.is_valid(), let's write it correctly:
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         

@@ -14,7 +14,9 @@ DEBUG = os.getenv('DEBUG', 'True').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'django.contrib.auth',
     'django.contrib.contenttypes',
+    'django.contrib.sessions',
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
