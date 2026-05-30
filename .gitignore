@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+dist/
+build/
+staticfiles/
+
+# Environments and Secrets
+.env
+.env.local
+.env.*.local
+venv/
+.venv/
+env/
+ENV/
+
+# Databases and cache
+db.sqlite3
+in_memory_db.json
+*.py[cod]
+__pycache__/
+.pytest_cache/
+
+# OS/IDE configs
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Submission artifacts
+submission.zip

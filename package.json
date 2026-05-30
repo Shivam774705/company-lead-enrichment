@@ -1,0 +1,15 @@
+{
+  "name": "company-lead-enrichment-suite",
+  "version": "1.0.0",
+  "description": "Enterprise lead profiling engine with smart scraping and Groq AI inference",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install --prefix frontend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "cd backend && python manage.py runserver",
+    "dev": "npx concurrently \"npm run dev:frontend\" \"npm run dev:backend\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
