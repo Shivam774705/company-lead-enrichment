@@ -4,6 +4,13 @@ A production-ready business intelligence extraction and profiling pipeline. It a
 
 ---
 
+## Application Screenshots
+
+![Dashboard & Enrichment Interface](assets/img1.png)
+![Database History & Logs](assets/img2.png)
+
+---
+
 ## Technical Stack
 - **Backend**: Python 3.13 + Django + Django REST Framework (DRF), `requests`, `beautifulsoup4`, `lxml`, `rapidfuzz`.
 - **Frontend**: React + Vite + Tailwind CSS + Axios + Lucide Icons.
