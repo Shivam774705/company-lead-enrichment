@@ -10,16 +10,21 @@ import sys
 import subprocess
 
 # Ensure necessary packages are installed
-required_packages = ["groq", "requests", "beautifulsoup4", "lxml", "rapidfuzz"]
-installed_packages = []
+required_packages = {
+    "groq": "groq",
+    "requests": "requests",
+    "beautifulsoup4": "bs4",
+    "lxml": "lxml",
+    "rapidfuzz": "rapidfuzz"
+}
 
 print("Validating dependencies...")
-for pkg in required_packages:
+for pkg, import_name in required_packages.items():
     try:
-        __import__(pkg)
+        __import__(import_name)
     except ImportError:
         print(f"Installing {pkg}...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg], stdin=subprocess.DEVNULL)
 
 # ---------------------------------------------------------------------
 # 2. CONFIGURATIONS & API KEY SETUP
@@ -90,6 +95,8 @@ def clean_url(url: str) -> str:
     url = url.strip()
     if not url:
         return ""
+    # Correct common typos like http// or https//
+    url = re.sub(r'^(https?)/+', r'\1://', url)
     parsed = urlparse(url)
     if not parsed.scheme:
         url = "https://" + url
@@ -191,6 +198,11 @@ class ColabSmartScraper:
             path_lower = link["path"].lower()
             text_lower = link["text"].lower()
             
+            # Fast pre-filter for large link lists (like massive sitemaps)
+            if len(links) > 200:
+                if not any(kw in path_lower or kw in text_lower for kw in TARGET_KEYWORDS):
+                    continue
+            
             max_score = 0
             for kw in TARGET_KEYWORDS:
                 if kw in path_lower or kw in text_lower:
@@ -218,8 +230,11 @@ class ColabSmartScraper:
         target_urls = []
         sitemap_urls = self.get_sitemap_urls()
         if sitemap_urls:
-            dummy_links = [{"url": u, "text": "", "path": urlparse(u).path} for u in sitemap_urls]
-            target_urls = self.score_links(dummy_links)[:4]
+            # Filter out sub-sitemaps (like .xml files) so we don't try to crawl XML indexes as HTML pages
+            sitemap_urls = [u for u in sitemap_urls if not (urlparse(u).path.endswith('.xml') or 'sitemap' in urlparse(u).path.lower())]
+            if sitemap_urls:
+                dummy_links = [{"url": u, "text": "", "path": urlparse(u).path} for u in sitemap_urls]
+                target_urls = self.score_links(dummy_links)[:4]
             
         if not target_urls:
             homepage_links = self.get_homepage_links(homepage_html)
@@ -236,8 +251,8 @@ class ColabSmartScraper:
                 phones.extend(extract_phones(page_text))
                 pages_content.append(f"=== Page URL: {url} ===\n{page_text}")
                 
-        emails = list(set(emails))
-        phones = list(set(phones))
+        emails = list(set(emails))[:10]
+        phones = list(set(phones))[:10]
         combined_text = "\n\n".join(pages_content)
         if len(combined_text) > 4500:
             combined_text = combined_text[:4500] + "... [Truncated]"
@@ -258,19 +273,24 @@ def enrich_company(url: str) -> dict:
     """
     cleaned_url = clean_url(url)
     if not cleaned_url:
+        print(f"\n[Error] Invalid URL provided: '{url}'")
         return DEFAULT_RESPONSE_SCHEMA.copy()
         
+    print(f"\n[Processing] {cleaned_url}...")
     try:
         # Step A: Scrape website intelligently
+        print(f"  [Scraping] Crawling website pages...")
         scraper = ColabSmartScraper(cleaned_url)
         scraped = scraper.scrape()
+        print(f"  [Scraping] Complete. Found {len(scraped.get('emails', []))} emails, {len(scraped.get('phones', []))} phones.")
         
         # Step B: Check API client key
         if not GROQ_API_KEY:
+            print("  [Groq AI] Warning: GROQ_API_KEY not configured. Skipping AI enrichment.")
             fallback = DEFAULT_RESPONSE_SCHEMA.copy()
             fallback["website_name"] = urlparse(cleaned_url).netloc
             fallback["mail"] = scraped.get("emails", [])
-            fallback["mobile_number"] = scraped.get("phones", [None])[0] or ""
+            fallback["mobile_number"] = scraped.get("phones")[0] if scraped.get("phones") else ""
             fallback["probable_pain_point"] = "Groq API Key not supplied. Scraping only."
             return fallback
             
@@ -288,45 +308,73 @@ def enrich_company(url: str) -> dict:
             "* Return STRICT VALID JSON ONLY. Do not wrap in markdown or commentary."
         )
 
-        user_content = (
-            "Extract company profile details using the schema below.\n\n"
-            "Strict JSON Schema:\n"
-            "{\n"
-            "  \"website_name\": \"\",\n"
-            "  \"company_name\": \"\",\n"
-            "  \"address\": \"\",\n"
-            "  \"mobile_number\": \"\",\n"
-            "  \"mail\": [],\n"
-            "  \"core_service\": \"\",\n"
-            "  \"target_customer\": \"\",\n"
-            "  \"probable_pain_point\": \"\",\n"
-            "  \"outreach_opener\": \"\"\n"
-            "}\n\n"
-            f"Pre-extracted verified emails: {scraped.get('emails', [])}\n"
-            f"Pre-extracted verified phone numbers: {scraped.get('phones', [])}\n\n"
-            f"Website text content:\n{scraped.get('combined_text', '')}\n"
-        )
+        if scraped.get('combined_text'):
+            user_content = (
+                "Extract company profile details using the schema below.\n\n"
+                "Strict JSON Schema:\n"
+                "{\n"
+                "  \"website_name\": \"\",\n"
+                "  \"company_name\": \"\",\n"
+                "  \"address\": \"\",\n"
+                "  \"mobile_number\": \"\",\n"
+                "  \"mail\": [],\n"
+                "  \"core_service\": \"\",\n"
+                "  \"target_customer\": \"\",\n"
+                "  \"probable_pain_point\": \"\",\n"
+                "  \"outreach_opener\": \"\"\n"
+                "}\n\n"
+                f"Pre-extracted verified emails: {scraped.get('emails', [])}\n"
+                f"Pre-extracted verified phone numbers: {scraped.get('phones', [])}\n\n"
+                f"Website text content:\n{scraped.get('combined_text', '')}\n"
+            )
+        else:
+            domain_name = urlparse(cleaned_url).netloc or cleaned_url
+            user_content = (
+                f"We were unable to scrape the website content for: {cleaned_url} (domain: {domain_name}).\n"
+                "Using your general pre-trained business intelligence knowledge about this company, please populate the company profile details using the schema below.\n"
+                "If the company or domain is unknown or invalid, return empty values for the fields.\n\n"
+                "Strict JSON Schema:\n"
+                "{\n"
+                "  \"website_name\": \"\",\n"
+                "  \"company_name\": \"\",\n"
+                "  \"address\": \"\",\n"
+                "  \"mobile_number\": \"\",\n"
+                "  \"mail\": [],\n"
+                "  \"core_service\": \"\",\n"
+                "  \"target_customer\": \"\",\n"
+                "  \"probable_pain_point\": \"\",\n"
+                "  \"outreach_opener\": \"\"\n"
+                "}\n"
+            )
         
-        # Query primary model
-        response = client.chat.completions.create(
-            model=PRIMARY_MODEL,
-            messages=[
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": user_content}
-            ],
-            temperature=0.1,
-            max_tokens=1000,
-            response_format={"type": "json_object"}
-        )
-        
-        raw_text = response.choices[0].message.content.strip()
-        
-        # Sanitize code blocks
-        if raw_text.startswith("```"):
-            raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
-            raw_text = re.sub(r"\s*```$", "", raw_text)
-            
-        parsed_data = json.loads(raw_text.strip())
+        # Query models with fallback
+        parsed_data = None
+        for model in [PRIMARY_MODEL, FALLBACK_MODEL]:
+            try:
+                print(f"  [Groq AI] Querying Groq using model {model}...")
+                response = client.chat.completions.create(
+                    model=model,
+                    messages=[
+                        {"role": "system", "content": system_instruction},
+                        {"role": "user", "content": user_content}
+                    ],
+                    temperature=0.1,
+                    max_tokens=1000,
+                    response_format={"type": "json_object"}
+                )
+                raw_text = response.choices[0].message.content.strip()
+                # Sanitize code blocks
+                if raw_text.startswith("```"):
+                    raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
+                    raw_text = re.sub(r"\s*```$", "", raw_text)
+                parsed_data = json.loads(raw_text.strip())
+                print(f"  [Groq AI] Successfully received response from model {model}.")
+                break
+            except Exception as e:
+                print(f"  [Groq AI] Warning: Model {model} failed: {e}")
+                
+        if parsed_data is None:
+            raise Exception("All Groq models failed to return a valid response.")
         
         # Ensure schema structure and inject regex contacts
         final = DEFAULT_RESPONSE_SCHEMA.copy()
@@ -353,9 +401,10 @@ def enrich_company(url: str) -> dict:
         if not final["mobile_number"] and scraped.get('phones'):
             final["mobile_number"] = scraped.get('phones')[0]
             
+        print(f"  [Success] Finished enrichment for {cleaned_url}!")
         return final
     except Exception as e:
-        print(f"Failed enriching {url}: {e}")
+        print(f"  [Error] Failed enriching {url}: {e}")
         fallback = DEFAULT_RESPONSE_SCHEMA.copy()
         fallback["website_name"] = urlparse(cleaned_url).netloc
         fallback["probable_pain_point"] = f"Extraction error occurred: {e}"

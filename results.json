@@ -1,39 +1,3 @@
-# LeadEnrich AI - Production Validation Report
-
-This report documents the actual execution and schema stability of the **LeadEnrich AI** engine against unseen corporate targets and extreme edge cases.
-
----
-
-## 1. Executive Summary
-
-- **Status**: **100% PASS**
-- **Robustness**: 
-  - **Typo Correction**: Automatically corrects missing colons/slashes (e.g., `https//freshworks.com` -> `https://freshworks.com`).
-  - **WAF Bypass / Fallback**: When scraping is blocked by WAFs (like Cloudflare 403 on Freshworks), the engine automatically falls back to utilizing pre-trained LLM business intelligence.
-  - **Token Cap & Speed Optimizer**: Filters out sub-sitemaps (XML indexes) to prevent slow parser hangs. Limits regex phone/email matches to a maximum of 10 to avoid token bloat.
-  - **Rate Limit Resilience**: Automatically loops over LLM models (`llama-3.3-70b-versatile` -> `llama-3.1-8b-instant`) in case of rate limits or context failures, ensuring stable responses.
-  - **Crash Safety**: Always returns the exact 9-key JSON schema. Invalid or dead domains return empty values instead of throwing exceptions.
-
----
-
-## 2. Test Run Details
-
-The following table lists the exact status and outputs from our verification run.
-
-| Test Case | Input URL | Normalized URL | Status | Crawled Contacts | LLM Model Used | Schema Stable |
-| --- | --- | --- | --- | --- | --- | --- |
-| **Razorpay** | `https://razorpay.com` | `https://razorpay.com` | **SUCCESS** | 1 email, 0 phones | Llama 3.3 (70B) | Yes |
-| **Freshworks** (Typo) | `https//freshworks.com` | `https://freshworks.com` | **SUCCESS** (Fallback) | 0 emails, 0 phones (Blocked) | Llama 3.3 (70B) | Yes |
-| **Postman** (Heavy Page) | `https://www.postman.com` | `https://www.postman.com` | **SUCCESS** (Model Fallback) | 6 emails, 2 phones (Capped) | Llama 3.1 (8B) | Yes |
-| **Chargebee** | `https://www.chargebee.com` | `https://www.chargebee.com` | **SUCCESS** (Model Fallback) | 0 emails, 0 phones | Llama 3.1 (8B) | Yes |
-| **Invalid Domain** | `abc` | `https://abc` | **GRACEFUL NO-OP** | 0 emails, 0 phones | Llama 3.3 (70B) | Yes |
-| **Dead Website** | `https://randomfakewebsite1234.com` | `https://randomfakewebsite1234.com` | **GRACEFUL NO-OP** | 0 emails, 0 phones | Llama 3.3 (70B) | Yes |
-
----
-
-## 3. Real Raw Response Output
-
-```json
 [
   {
     "website_name": "Razorpay",
@@ -111,4 +75,3 @@ The following table lists the exact status and outputs from our verification run
     "outreach_opener": ""
   }
 ]
-```

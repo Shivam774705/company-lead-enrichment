@@ -110,6 +110,11 @@ class SmartScraper:
             path_lower = link["path"].lower()
             text_lower = link["text"].lower()
             
+            # Fast pre-filter for large link lists (like massive sitemaps)
+            if len(links) > 200:
+                if not any(kw in path_lower or kw in text_lower for kw in TARGET_KEYWORDS):
+                    continue
+            
             max_score = 0
             # Compare against target keywords
             for kw in TARGET_KEYWORDS:
@@ -157,20 +162,22 @@ class SmartScraper:
         # Determine paths to fetch
         target_urls = []
         
-        # APPROACH 1: Try sitemap
         sitemap_urls = self.get_sitemap_urls()
         if sitemap_urls:
-            print(f"Found {len(sitemap_urls)} URLs in sitemap.xml. Scoring them...")
-            # Form dummy links dict for scoring
-            dummy_links = []
-            for u in sitemap_urls:
-                parsed = urlparse(u)
-                dummy_links.append({
-                    "url": u,
-                    "text": "",
-                    "path": parsed.path
-                })
-            target_urls = self.score_links(dummy_links)[:4] # Take top 4 sitemap pages
+            # Filter out sub-sitemaps (like .xml files) so we don't try to crawl XML indexes as HTML pages
+            sitemap_urls = [u for u in sitemap_urls if not (urlparse(u).path.endswith('.xml') or 'sitemap' in urlparse(u).path.lower())]
+            if sitemap_urls:
+                print(f"Found {len(sitemap_urls)} URLs in sitemap.xml. Scoring them...")
+                # Form dummy links dict for scoring
+                dummy_links = []
+                for u in sitemap_urls:
+                    parsed = urlparse(u)
+                    dummy_links.append({
+                        "url": u,
+                        "text": "",
+                        "path": parsed.path
+                    })
+                target_urls = self.score_links(dummy_links)[:4] # Take top 4 sitemap pages
             
         # APPROACH 2: Try parsing homepage links
         if not target_urls:
@@ -199,9 +206,9 @@ class SmartScraper:
         else:
             print("No high-quality internal links discovered. Using homepage only (Approach 3).")
 
-        # Clean lists (deduplicate)
-        emails = list(set(emails))
-        phones = list(set(phones))
+        # Clean lists (deduplicate) and cap to 10 to prevent prompt bloat
+        emails = list(set(emails))[:10]
+        phones = list(set(phones))[:10]
         
         # Merge contents and optimize tokens (limit combined string length to 4500 chars)
         combined_text = "\n\n".join(pages_content)

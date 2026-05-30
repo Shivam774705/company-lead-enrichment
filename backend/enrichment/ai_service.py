@@ -78,25 +78,44 @@ class GroqService:
             "* Return STRICT VALID JSON ONLY. Do not wrap in markdown or include conversational text."
         )
 
-        user_content = (
-            "Extract company profile details using the schema below.\n\n"
-            "Strict JSON Schema:\n"
-            "{\n"
-            "  \"website_name\": \"\",\n"
-            "  \"company_name\": \"\",\n"
-            "  \"address\": \"\",\n"
-            "  \"mobile_number\": \"\",\n"
-            "  \"mail\": [],\n"
-            "  \"core_service\": \"\",\n"
-            "  \"target_customer\": \"\",\n"
-            "  \"probable_pain_point\": \"\",\n"
-            "  \"outreach_opener\": \"\"\n"
-            "}\n\n"
-            f"Pre-extracted verified emails: {emails}\n"
-            f"Pre-extracted verified phone numbers: {phones}\n"
-            f"Optional Custom Website Name: {custom_website_name}\n\n"
-            f"Website text content:\n{cleaned_text}\n"
-        )
+        if cleaned_text:
+            user_content = (
+                "Extract company profile details using the schema below.\n\n"
+                "Strict JSON Schema:\n"
+                "{\n"
+                "  \"website_name\": \"\",\n"
+                "  \"company_name\": \"\",\n"
+                "  \"address\": \"\",\n"
+                "  \"mobile_number\": \"\",\n"
+                "  \"mail\": [],\n"
+                "  \"core_service\": \"\",\n"
+                "  \"target_customer\": \"\",\n"
+                "  \"probable_pain_point\": \"\",\n"
+                "  \"outreach_opener\": \"\"\n"
+                "}\n\n"
+                f"Pre-extracted verified emails: {emails}\n"
+                f"Pre-extracted verified phone numbers: {phones}\n"
+                f"Optional Custom Website Name: {custom_website_name}\n\n"
+                f"Website text content:\n{cleaned_text}\n"
+            )
+        else:
+            user_content = (
+                f"We were unable to scrape the website content for: {custom_website_name or 'the company'}.\n"
+                "Using your general pre-trained business intelligence knowledge about this company, please populate the company profile details using the schema below.\n"
+                "If the company or domain is unknown or invalid, return empty values for the fields.\n\n"
+                "Strict JSON Schema:\n"
+                "{\n"
+                "  \"website_name\": \"\",\n"
+                "  \"company_name\": \"\",\n"
+                "  \"address\": \"\",\n"
+                "  \"mobile_number\": \"\",\n"
+                "  \"mail\": [],\n"
+                "  \"core_service\": \"\",\n"
+                "  \"target_customer\": \"\",\n"
+                "  \"probable_pain_point\": \"\",\n"
+                "  \"outreach_opener\": \"\"\n"
+                "}\n"
+            )
 
         # 3. Call API with fallback model in case of rate limits
         for model in [PRIMARY_MODEL, FALLBACK_MODEL]:

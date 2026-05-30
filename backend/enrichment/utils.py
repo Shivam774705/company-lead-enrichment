@@ -56,6 +56,9 @@ def clean_url(url: str) -> str:
     if not url:
         return ""
     
+    # Correct common typos like http// or https//
+    url = re.sub(r'^(https?)/+', r'\1://', url)
+    
     # Try parsing
     parsed = urlparse(url)
     
