@@ -76,26 +76,31 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#030409] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.15),rgba(255,255,255,0))] pb-20">
+    <div className="min-h-screen bg-[#020205] bg-grid-pattern pb-20 relative overflow-hidden">
+      {/* Background Neon Glowing Spotlights */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-900/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
+      <div className="absolute top-[20%] right-[-10%] w-[45vw] h-[45vw] bg-cyan-900/10 rounded-full blur-[120px] pointer-events-none animate-pulse-slow"></div>
+      <div className="absolute bottom-[10%] left-[20%] w-[40vw] h-[40vw] bg-blue-900/5 rounded-full blur-[120px] pointer-events-none"></div>
+
       <Navbar />
       
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 sm:mt-16 space-y-12 relative z-10">
         {/* Hero Banner Section */}
-        <section className="text-center max-w-3xl mx-auto space-y-4">
-          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-cyan-500/10 to-purple-500/10 border border-cyan-500/20 px-3.5 py-1.5 rounded-full text-xs font-semibold text-cyan-400">
-            <Compass className="h-3.5 w-3.5 animate-spin-slow" />
-            <span>AI-Driven Corporate Intelligence Scraper</span>
+        <section className="text-center max-w-3xl mx-auto space-y-5">
+          <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-purple-500/10 via-cyan-500/10 to-blue-500/10 border border-slate-800/80 px-4 py-2 rounded-full text-xs font-semibold text-slate-300 shadow-glow">
+            <span className="flex h-2 w-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            <span className="font-mono text-cyan-400 tracking-wide uppercase text-[10px]">Developer Hiring Hackathon Deployed Sandbox</span>
           </div>
           
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-none">
+          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.05] font-sans">
             Turn Any Website into <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
               Actionable B2B Insights
             </span>
           </h1>
           
-          <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-            Extract verified emails, phone numbers, addresses, and use Groq AI to map target customers, discover organizational pain points, and write custom sales copy instantly.
+          <p className="text-sm sm:text-base text-slate-400 leading-relaxed font-sans max-w-2xl mx-auto">
+            A high-performance AI crawler and corporate profiler. Extract verified emails, phone numbers, and addresses. Map target customers and pain points using Groq AI instantly.
           </p>
         </section>
 

@@ -64,23 +64,36 @@ export default function EnrichForm({ onEnrich, isLoading }) {
         Enter a company website URL. The engine will scrape its contents and generate key B2B profile insights instantly.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Website Name (Optional) */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Website / Company Name <span className="text-slate-500">(Optional)</span>
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Relu Consultancy"
-              value={websiteName}
-              onChange={(e) => setWebsiteName(e.target.value)}
+      {/* Recruiter Quick-Test URLs Selector */}
+      <div className="mb-6 p-4 rounded-xl bg-slate-950/40 border border-slate-900">
+        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-2.5">
+          ⚡ Recruiter Quick-Test sandbox
+        </span>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { name: 'Razorpay', url: 'https://razorpay.com' },
+            { name: 'Zoho', url: 'https://www.zoho.com' },
+            { name: 'Stripe', url: 'https://www.stripe.com' },
+            { name: 'Postman', url: 'https://www.postman.com' }
+          ].map((sample) => (
+            <button
+              key={sample.name}
+              type="button"
+              onClick={() => {
+                setUrl(sample.url);
+                setWebsiteName(sample.name);
+              }}
               disabled={isLoading}
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 outline-none transition duration-200"
-            />
-          </div>
+              className="text-xs bg-slate-900 border border-slate-800 hover:border-cyan-500/40 text-slate-400 hover:text-cyan-400 px-3 py-1.5 rounded-lg transition duration-150 shrink-0 font-medium font-mono"
+            >
+              {sample.name}
+            </button>
+          ))}
+        </div>
+      </div>
 
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4">
           {/* Company URL (Required) */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -88,11 +101,26 @@ export default function EnrichForm({ onEnrich, isLoading }) {
             </label>
             <input
               type="text"
-              placeholder="e.g. reluconsultancy.in"
+              placeholder="e.g. razorpay.com"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               disabled={isLoading}
-              className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-600 outline-none transition duration-200"
+              className="w-full bg-slate-950/70 border border-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-700 outline-none transition duration-200"
+            />
+          </div>
+
+          {/* Website Name (Optional) */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Website / Company Name <span className="text-slate-500">(Optional)</span>
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. Razorpay"
+              value={websiteName}
+              onChange={(e) => setWebsiteName(e.target.value)}
+              disabled={isLoading}
+              className="w-full bg-slate-950/70 border border-slate-800 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-700 outline-none transition duration-200"
             />
           </div>
         </div>
